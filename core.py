@@ -23,7 +23,7 @@ def recognize_from_mic(lang,key):
     result = speech_recognizer.recognize_once_async().get()
     print('Me:'+result.text)
     return result.text
-"5c05507933314a0caa980687fad5e2de"
+
 def synthesize_to_speaker(text,lang,key):
 	#Find your key and resource region under the 'Keys and Endpoint' tab in your Speech resource in Azure Portal
 	#Remember to delete the brackets <> when pasting your key and region!
@@ -49,7 +49,7 @@ def respond(conversation,mod,key):
     presence_penalty=0.1,
     stop=["ME:", "YOU:"])
     return response.choices[0].text
-"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"
+
 def suggestion(conversation,mod,key):
     openai.api_key = key
     response = openai.Completion.create(

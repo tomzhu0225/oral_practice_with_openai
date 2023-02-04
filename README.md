@@ -6,8 +6,14 @@
 
 Run qt_qui.py
 
-Enter the api keys of azure and openai
+Enter the api keys of [azure](https://azure.microsoft.com/en-us/free/students/) and [openai](https://openai.com/api/)
 
-Choose your language
+Choose your language and set your preset
+
+Then SPEAK!
+
+# Updates
+
+Add hide text function (04/02/2023)
 
 # A full README will be uploaded soon!

@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtCore import QObject, pyqtSlot,Qt
 from PyQt5.QtGui import QTextCursor, QTextCharFormat,QFont,QBrush,QColor
-from PyQt5.QtWidgets import QFormLayout,QDialogButtonBox, QDialog,QApplication,QDockWidget, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget,QLabel,QComboBox, QLineEdit,QToolBar,QAction,QMessageBox
+from PyQt5.QtWidgets import QSizePolicy,QFormLayout,QDialogButtonBox, QDialog,QApplication,QDockWidget, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget,QLabel,QComboBox, QLineEdit,QToolBar,QAction,QMessageBox
 import azure.cognitiveservices.speech as speechsdk
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
 import os
@@ -64,7 +64,9 @@ class MainWindow(QMainWindow):
         author_action = QAction("Author", self)
         self.toolbar.addAction(author_action)
         author_action.triggered.connect(self.display_author_info)
-        
+        Text_vis = QAction("Text visibility", self)
+        self.toolbar.addAction(Text_vis)
+        Text_vis.triggered.connect(self.Text_vis_func)
         #set circumstances
         self.conversation1 = ""
         self.conversation = ""
@@ -121,6 +123,11 @@ QLineEdit {
         # Create the text edit widget
         self.text_edit = QTextEdit(self)
         self.text_edit.setReadOnly(True)
+        #fix size when hide
+        size_policy = self.text_edit.sizePolicy()
+        size_policy.setRetainSizeWhenHidden(True)
+        self.text_edit.setSizePolicy(size_policy)
+        #self.text_edit.setMaximumSize(self.text_edit.sizeHint())
         self.text_edit.setStyleSheet("""
     QTextEdit {
         background-color: white;
@@ -189,6 +196,8 @@ QLineEdit {
         self.respond_mod="text-davinci-003"
         self.sugg_mod="text-davinci-003"
 
+    def Text_vis_func(self):
+        self.text_edit.setVisible(not self.text_edit.isVisible())
     def mode_changed(self, index):
         if index==0:
             self.respond_mod="text-davinci-003"

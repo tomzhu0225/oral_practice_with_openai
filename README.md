@@ -16,4 +16,7 @@ Then SPEAK!
 
 Add hide text function (04/02/2023)
 
+Web page version developing(07/02/2023):
+![Alt Text](https://github.com/tomzhu0225/oral_practice_with_openai/blob/master/dev_pic.png)
+
 # A full README will be uploaded soon!

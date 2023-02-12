@@ -32,46 +32,47 @@ class Controller:
             self._model.respond_mod = "text-curie-001"
             self._model.sugg_mod = "text-curie-001"
     
+    def _change_suggestion(self):
+        self._model.is_suggestion = not self._model.is_suggestion
+        if self._model.is_suggestion:
+            if not self._view.suggestion_window.isVisible():
+                self.suggestion_window.show()
+
+    
     # Background input
-    @pyqtSlot()
+    # @pyqtSlot()
     def _update_background(self):
-        self._model.conversation = self.background_input.text()
+        self._model.conversation = self._view.background_input.text()
         self._model.is_background_set = True
 
     # Lower Buttons
     # @pyqtSlot()
     def _speak(self):
-        # old_layout = self.side_widget.layout().takeAt(0)
-        # if old_layout is not None:
-        #     old_widget = old_layout.widget()
-
-        #     if old_widget is not None:
-        #         old_widget.deleteLater()
-        my_paragraph, ai_respond = self._model.forward()
+        my_paragraph, ai_respond, sugg = self._model.forward()
         self._view.text_edit.append_text("You: " + my_paragraph, "blue")
         self._view.text_edit.append_text("AI: " + ai_respond, "green")
 
-        self._model.conversation_sugg = self._model.conversation + '\nYou:'
-        sugg = suggestion(self._model.conversation_sugg, self._model.sugg_mod, self._model.settings.openai_api)
-        ai_bubble = BubbleLabel(text=sugg.replace('\n', ''), color='green')
-        ai_bubble_layout = QHBoxLayout()
-        ai_bubble_layout.addWidget(ai_bubble)
-
-        # self._view.suggestion_window.setLayout(ai_bubble_layout)
-        # self._view.central_widget.setLayout(ai_bubble_layout)
+        if self._model.is_suggestion:
+            ai_bubble = BubbleLabel(text=sugg.replace('\n', ''), color='green')
+            ai_bubble_layout = QHBoxLayout()
+            ai_bubble_layout.addWidget(ai_bubble)
+            self._view.suggestion_window.suggestion_widget.layout().addLayout(ai_bubble_layout)
     
     def _clear_text(self):
         self._model.conversation=''
         self._model.is_background_set = False
         self._view.text_edit.clear()
+        self._view.background_input.clear()
     
     def _connect_signals(self):
         # ToolBar
         self._view.toolbar.author_action.triggered.connect(self._display_author_info)
         self._view.toolbar.text_vis.triggered.connect(self._change_text_vis)
         self._view.toolbar.mode_selector.currentIndexChanged.connect(self._change_mode)
+        self._view.toolbar.suggestion_action.triggered.connect(self._change_suggestion)
 
         # Background input
+        self._view.background_input.textChanged.connect(self._update_background)
 
         # Lower Buttons
         self._view.lower_layout.speak_button.clicked.connect(self._speak)

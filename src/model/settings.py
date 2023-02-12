@@ -1,4 +1,4 @@
-from view.components import SettingsDialog
+from view.dialogues import SettingsDialog
 import json, langcodes
 
 class Settings():

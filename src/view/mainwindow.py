@@ -1,18 +1,8 @@
-import sys
-from PyQt5.QtCore import QObject, pyqtSlot, Qt
-from PyQt5.QtGui import QTextCursor, QTextCharFormat, QFont, QBrush, QColor
-from PyQt5.QtWidgets import QSizePolicy, QFormLayout, QDialogButtonBox, QDialog, QApplication, QDockWidget, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox, QLineEdit, QToolBar, QAction, QMessageBox
-import azure.cognitiveservices.speech as speechsdk
-from azure.cognitiveservices.speech.audio import AudioOutputConfig
-
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QHBoxLayout, QWidget
 
 from model.chatsession import ChatSession
-from model.core import recognize_from_mic, synthesize_to_speaker, respond, concatenate, suggestion
-from model.settings import Settings
-from . import qt_style_sheet
-from .components import ToolBar, SuggestionWindow, TextEdit, BackgroundInput
-from view.layout import LowerLayout
-
+from .components import ToolBar, SuggestionDockWidget, TextEdit, BackgroundInput, LowerLayout
 
 
 
@@ -23,6 +13,7 @@ class MainWindow(QMainWindow):
 
         self.chat_session = ChatSession()
 
+        # Size and Title
         self.setFixedSize(800, 900)
         self.setWindowTitle("ChatGPT Speaking Practice")
 
@@ -31,10 +22,10 @@ class MainWindow(QMainWindow):
         self.addToolBar(self.toolbar)
 
         # Suggestion Window
-        self.suggestion_window = SuggestionWindow()
+        self.suggestion_window = SuggestionDockWidget()
         self.suggestion_window.setGeometry(self.x() + self.width(), self.y(), 400, 400)
-        self.addDockWidget(Qt.TopDockWidgetArea, self.suggestion_window.side_window)
-        self.toolbar.addAction(self.suggestion_window.tips_action)
+        self.addDockWidget(Qt.TopDockWidgetArea, self.suggestion_window)
+        # self.toolbar.addAction(self.suggestion_window.tips_action)
         
         # Create central widget, which contains:
         #   1. text_edit

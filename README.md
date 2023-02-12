@@ -19,15 +19,15 @@ pip install openai azure-cognitiveservices-speech PyQt5
 ## Get API keys from OpenAI
 
 1. Log in to [OpenAI](https://openai.com/api/).
-2. In the overview page, click upper right icon, and then click "View API keys".
-3. In the API keys page, click "+ Create new secret key", which will generate the secret key. Be sure to save it because it cannot be seen the second time.
+2. In the overview page, click the upper right icon, and then click "View API keys".
+3. In the API keys page, click "+ Create new secret key", which will generate the secret key. Be sure to save it because it cannot be seen a second time.
 
 ## Get API keys from Microsoft Microsoft Azure Cognitive Services
 
 1. Log in to [Microsoft Azure](https://azure.microsoft.com/en-us/free/students/).
 2. In the search banner, search "Speech Service".
 3. Create an instance for Speech Service.
-4. In the page of the instance you created, click "Keys and Endpoint" under "Resource Management" on the left.
+4. On the page of the instance you created, click "Keys and Endpoint" under "Resource Management" on the left.
 5. Copy one of the keys and the "Location/Region".
 
 ## Application Usage

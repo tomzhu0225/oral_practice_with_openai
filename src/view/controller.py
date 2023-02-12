@@ -2,6 +2,7 @@ class Controller:
     def __init__(self, model, view):
         self._model = model
         self._view = view
+        self._default_settings()
         self._connect_signals()
     
     
@@ -45,6 +46,10 @@ class Controller:
 
 
     # Lower Buttons
+
+    def _change_language(self):
+        self._model.lang_tag = self._view.lower_layout.language_box.currentText()
+
     # @pyqtSlot()
     def _speak(self):
         my_paragraph, ai_respond, sugg = self._model.forward()
@@ -64,6 +69,11 @@ class Controller:
     
 
 
+    # Default settings when creating the objects
+    def _default_settings(self):
+        self._view.suggestion_window.hide()
+        self._view.lower_layout.language_box.setCurrentText(self._model.lang_tag)
+
     # Connect all signals when creating the objects
 
     def _connect_signals(self):
@@ -78,6 +88,7 @@ class Controller:
         self._view.background_input.textChanged.connect(self._update_background)
 
         # Lower Buttons
+        self._view.lower_layout.language_box.currentIndexChanged.connect(self._change_language)
         self._view.lower_layout.speak_button.clicked.connect(self._speak)
         self._view.lower_layout.clear_button.clicked.connect(self._clear_text)
 

@@ -59,7 +59,7 @@ class SuggestionDockWidget(QDockWidget):
         self.suggestion_label_layout.addWidget(self.suggestion_label)
 
         self.suggestion_widget.layout().addLayout(self.suggestion_label_layout)
-        self.hide() # initial hide the suggestion
+        # self.hide() # initial hide the suggestion
 
 
 
@@ -108,7 +108,7 @@ class BackgroundInput(QLineEdit):
 class LanguageBox(QComboBox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.language_list = ["Chinese", "English", "French", "Japanese"]
+        self.language_list = ["zh-CN", "en-US", "en-GB", "fr-FR", "ja-JP"]
         self.addItems(self.language_list)
         self.setStyleSheet(qt_style_sheet.language_box)
 

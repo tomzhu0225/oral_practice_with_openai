@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QObject, pyqtSlot, Qt
-from PyQt5.QtGui import QTextCursor, QTextCharFormat, QFont, QBrush, QColor
-from PyQt5.QtWidgets import QSizePolicy, QFormLayout, QDialogButtonBox, QDialog, QApplication, QDockWidget, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox, QLineEdit, QToolBar, QAction, QMessageBox
+from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtGui import QTextCursor, QFont, QBrush, QColor
+from PyQt5.QtWidgets import QDockWidget, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox, QLineEdit, QToolBar, QAction
 
 from . import qt_style_sheet
 
@@ -42,28 +42,21 @@ class ToolBar(QToolBar):
 class SuggestionDockWidget(QDockWidget):
     def __init__(self, *args, **kwargs):
         super().__init__("suggestion", *args, **kwargs)
-        # self.side_widget = QWidget(self.side_window)  # set layout
-        
-        # self.suggestion_dock_widget = QDockWidget("suggestion", self)       
-        # self.side_window.setGeometry(self.x() + self.width(), self.y(), 400, 400)
-        #self.side_window.setAllowedAreas(Qt.RightDockWidgetArea)
-        # self.addDockWidget(Qt.TopDockWidgetArea, self.side_window)
-        
+
         self.suggestion_widget = QWidget(self) #set layout
         layout = QVBoxLayout(self.suggestion_widget)
         self.suggestion_widget.setLayout(layout)
         self.setWidget(self.suggestion_widget)
-
-        # self.tips_action = QAction("Suggestion", self)
-        # self.tips_action.setCheckable(True)
-        # self.tips_action.toggled.connect(self.toggle_side_window)
         
         self.label = QLabel(self)
         self.suggestion_widget.layout().addWidget(self.label)
 
-    # def toggle_side_window(self):
-    #     if not self.isVisible():
-    #         self.show()
+        self.suggestion_label = BubbleLabel(color='green')
+        self.suggestion_label_layout = QHBoxLayout()
+        self.suggestion_label_layout.addWidget(self.suggestion_label)
+
+        self.suggestion_widget.layout().addLayout(self.suggestion_label_layout)
+        self.hide() # initial hide the suggestion
 
 
 

@@ -25,7 +25,6 @@ class MainWindow(QMainWindow):
         self.suggestion_window = SuggestionDockWidget()
         self.suggestion_window.setGeometry(self.x() + self.width(), self.y(), 400, 400)
         self.addDockWidget(Qt.TopDockWidgetArea, self.suggestion_window)
-        # self.toolbar.addAction(self.suggestion_window.tips_action)
         
         # Create central widget, which contains:
         #   1. text_edit

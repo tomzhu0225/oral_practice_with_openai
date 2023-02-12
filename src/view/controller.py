@@ -1,11 +1,3 @@
-from PyQt5.QtWidgets import QHBoxLayout
-from PyQt5.QtCore import pyqtSlot
-
-from model.core import suggestion
-from view.components import BubbleLabel
-
-
-
 class Controller:
     def __init__(self, model, view):
         self._model = model
@@ -35,8 +27,10 @@ class Controller:
     def _change_suggestion(self):
         self._model.is_suggestion = not self._model.is_suggestion
         if self._model.is_suggestion:
-            if not self._view.suggestion_window.isVisible():
-                self.suggestion_window.show()
+            self._view.suggestion_window.show()
+        else:
+            self._view.suggestion_window.hide()
+
 
     
     # Background input
@@ -44,6 +38,8 @@ class Controller:
     def _update_background(self):
         self._model.conversation = self._view.background_input.text()
         self._model.is_background_set = True
+
+
 
     # Lower Buttons
     # @pyqtSlot()
@@ -53,17 +49,20 @@ class Controller:
         self._view.text_edit.append_text("AI: " + ai_respond, "green")
 
         if self._model.is_suggestion:
-            ai_bubble = BubbleLabel(text=sugg.replace('\n', ''), color='green')
-            ai_bubble_layout = QHBoxLayout()
-            ai_bubble_layout.addWidget(ai_bubble)
-            self._view.suggestion_window.suggestion_widget.layout().addLayout(ai_bubble_layout)
+            self._view.suggestion_window.suggestion_label.setText(sugg.replace('\n', ''))
     
     def _clear_text(self):
         self._model.conversation=''
         self._model.is_background_set = False
         self._view.text_edit.clear()
         self._view.background_input.clear()
+        if self._model.is_suggestion:
+            self._view.suggestion_window.suggestion_label.setText("")
     
+
+
+    # Connect all signals when creating the objects
+
     def _connect_signals(self):
         # ToolBar
         self._view.toolbar.author_action.triggered.connect(self._display_author_info)

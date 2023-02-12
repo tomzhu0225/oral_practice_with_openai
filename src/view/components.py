@@ -36,6 +36,9 @@ class ToolBar(QToolBar):
         self.suggestion_action.setCheckable(True)
         self.addAction(self.suggestion_action)
 
+        self.settings_action = QAction("Settings", self)
+        self.addAction(self.settings_action)
+
 
 # Suggestion Bubble
 

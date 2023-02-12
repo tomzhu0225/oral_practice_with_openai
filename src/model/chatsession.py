@@ -45,7 +45,7 @@ class ChatSession:
         return ai_respond
 
     def _suggestion(self):
-        self.conversation_suggestion = self.conversation+'\nYou:'
+        self.conversation_suggestion = self.conversation+'\nYou: '
         sugg = suggestion(self.conversation_suggestion, self.sugg_mod, self.settings.openai_api)
         if self.print_cmd:
             print(f"Suggestion: {sugg}")

@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QFormLayout, QDialog, QPushButton, QLineEdit
-
+from PyQt5.QtWidgets import QFormLayout, QDialog, QPushButton, QLineEdit, QComboBox
+from . import qt_style_sheet
 
 
 class SettingsDialog(QDialog):
@@ -17,7 +17,12 @@ class SettingsDialog(QDialog):
         self.openai_api_edit = QLineEdit(self.openai_api)
         layout.addRow("OpenAI API Key:", self.openai_api_edit)
 
-        self.default_lang_edit = QLineEdit(self.default_lang)
+        # self.default_lang_edit = QLineEdit(self.default_lang)
+        # layout.addRow("Default Language:", self.default_lang_edit)
+        self.default_lang_edit = QComboBox(self.default_lang)
+        language_list = ["zh-CN", "en-US", "en-GB", "fr-FR", "ja-JP"]
+        self.default_lang_edit.addItems(language_list)
+        self.default_lang_edit.setStyleSheet(qt_style_sheet.language_box)
         layout.addRow("Default Language:", self.default_lang_edit)
 
         self.azure_api_edit = QLineEdit(self.azure_api)

@@ -31,6 +31,9 @@ class Controller:
         else:
             self._view.suggestion_window.hide()
 
+    def _change_settings(self):
+        self._model.settings._update_settings()
+
 
     
     # Background input
@@ -69,6 +72,7 @@ class Controller:
         self._view.toolbar.text_vis.triggered.connect(self._change_text_vis)
         self._view.toolbar.mode_selector.currentIndexChanged.connect(self._change_mode)
         self._view.toolbar.suggestion_action.triggered.connect(self._change_suggestion)
+        self._view.toolbar.settings_action.triggered.connect(self._change_settings)
 
         # Background input
         self._view.background_input.textChanged.connect(self._update_background)

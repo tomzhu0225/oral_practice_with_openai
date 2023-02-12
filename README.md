@@ -17,8 +17,6 @@ Then SPEAK!
 Add hide text function (04/02/2023)
 
 Web page version developing(07/02/2023):
-![Alt Text](https://github.com/tomzhu0225/oral_practice_with_openai/blob/master/dev_pic.png)
+![Alt Text](./assets/dev_pic.png)
 
-Web page version developed(for now it seems like it doesn't support china region)：
-see：https://drawingsword-oral.streamlit.app/
 # A full README will be uploaded soon!

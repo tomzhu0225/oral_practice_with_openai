@@ -1,4 +1,4 @@
-from model.core import recognize_from_mic, synthesize_to_speaker, respond, concatenate, concatenate, suggestion
+from model.core import synthesize_to_speaker, respond, concatenate, concatenate, suggestion
 from model.settings import Settings
 
 import azure.cognitiveservices.speech as speechsdk
@@ -28,21 +28,6 @@ class ChatSession:
 
         self.debug = False # only for debug
     
-    # def _speak(self):
-    #     if not self.is_background_set:
-    #         self.conversation = ""
-        
-    #     if self.print_cmd:
-    #         print("Speak into your microphone.\n")
-        
-    #     my_paragraph = recognize_from_mic(self.lang_tag, self.settings.azure_api, self.settings.azure_region)
-    #     self.conversation = concatenate(self.conversation, "You: ", my_paragraph)
-
-    #     if self.print_cmd:
-    #         print(f"You: {my_paragraph}\n")
-        
-    #     return my_paragraph
-
     def _start_speak(self):
         if not self.is_background_set:
             self.conversation = ""
@@ -54,6 +39,8 @@ class ChatSession:
     
     def _append_recognized_text(self, evt):
         self.my_paragraph += evt.result.text
+        if self.debug:
+            print('RECOGNIZED inside: {}'.format(evt))
     
     def _stop_speak(self):
         self.speech_recognizer.stop_continuous_recognition_async()

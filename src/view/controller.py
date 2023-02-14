@@ -1,3 +1,8 @@
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QWaitCondition, QMutex
+from PyQt5.QtWidgets import QMessageBox
+
+
+
 class Controller:
     def __init__(self, model, view):
         self._model = model
@@ -5,10 +10,8 @@ class Controller:
         self._default_settings()
         self._connect_signals()
     
-    
     # ToolBar
     def _display_author_info(self):
-        from PyQt5.QtWidgets import QMessageBox
         QMessageBox.information(self._view, "Author Information", "Author: Bowen ZHU\nEmail: bowen.zhu@student-cs.fr\nContributor: Chuanqi XU\nEmail: chuanqi.xu@yale.edu")
     
     def _change_text_vis(self):
@@ -52,19 +55,18 @@ class Controller:
 
     # @pyqtSlot()
     def _speak(self):
-        # my_paragraph, ai_respond, sugg = self._model.forward()
-
         if self._model.start_recording:
             self._model.start_recording = False
             my_paragraph, ai_respond, sugg = self._model._stop_speak()
-            self._view.text_edit.append_text("You: " + my_paragraph, "blue")
-            self._view.text_edit.append_text("AI: " + ai_respond, "green")
+
+            self._view.text_edit.append_text("\n\nAI: " + ai_respond, "green")
 
             if self._model.is_suggestion:
                 self._view.suggestion_window.suggestion_label.setText(sugg.replace('\n', ''))
         else:
             self._model.start_recording = True
             self._model._start_speak()
+            self._view.text_edit.append_text("\n\nYou: ", "blue")
     
     def _clear_text(self):
         self._model.conversation=''
@@ -73,13 +75,15 @@ class Controller:
         self._view.background_input.clear()
         if self._model.is_suggestion:
             self._view.suggestion_window.suggestion_label.setText("")
-    
+
 
 
     # Default settings when creating the objects
     def _default_settings(self):
         self._view.suggestion_window.hide()
         self._view.lower_layout.language_box.setCurrentText(self._model.lang_tag)
+
+
 
     # Connect all signals when creating the objects
 
@@ -96,6 +100,38 @@ class Controller:
 
         # Lower Buttons
         self._view.lower_layout.language_box.currentIndexChanged.connect(self._change_language)
+        
         self._view.lower_layout.speak_button.clicked.connect(self._speak)
+
+        print_recognized = PrintRecognized(self._view)
+        def _print_recognized(evt):
+            print_recognized.run(evt)
+            
+        self._model.speech_recognizer.recognized.connect(_print_recognized)
+        
         self._view.lower_layout.clear_button.clicked.connect(self._clear_text)
 
+
+
+class PrintRecognized(QObject):
+    # PyQt5 requires only the main thread controls the GUI
+    # So speech_recognizer.recognized signals can not be directly send to control the GUI
+    # To solve this, the signal from other threads can be transformed into pyqtSignal
+    # 
+    # The process is:
+    # 1. speech_recognizer.recognized triggered
+    # 2. call _print_recognized()
+    # 3. inside _print_recognized(), call PrintRecognized.run()
+    # 4. pyqtSignal signals, which then calls the function connected in PrintRecognized.__init__
+    # 5. call self._view.text_edit.append_text() to print the text
+
+    signal = pyqtSignal(str) # pyqtSignal needs to be defined on the class level
+
+    def __init__(self, view):
+        super().__init__()
+        self._view = view
+        self.signal.connect(lambda recognized_message: self._view.text_edit.append_text(recognized_message, "blue"))
+    
+    @pyqtSlot()
+    def run(self, evt):
+        self.signal.emit(evt.result.text)

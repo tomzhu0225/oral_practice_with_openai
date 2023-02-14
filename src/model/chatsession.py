@@ -1,6 +1,7 @@
 from model.core import recognize_from_mic, synthesize_to_speaker, respond, concatenate, concatenate, suggestion
 from model.settings import Settings
 
+import azure.cognitiveservices.speech as speechsdk
 
 
 class ChatSession:
@@ -17,22 +18,53 @@ class ChatSession:
         self.sugg_mod = "text-davinci-003"
 
         self.print_cmd = print_cmd
+
+        self.speech_config = speechsdk.SpeechConfig(subscription=self.settings.azure_api, region=self.settings.azure_region, speech_recognition_language=self.lang_tag)
+        self.speech_recognizer = speechsdk.SpeechRecognizer(speech_config=self.speech_config)
+        self.start_recording = False
+        self.speech_recognizer.recognized.connect(self._append_recognized_text)
+        self.speech_recognizer.session_stopped.connect(self._print_paragraph)
+        self.my_paragraph = ""
+
+        self.debug = False # only for debug
     
-    def _speak(self):
+    # def _speak(self):
+    #     if not self.is_background_set:
+    #         self.conversation = ""
+        
+    #     if self.print_cmd:
+    #         print("Speak into your microphone.\n")
+        
+    #     my_paragraph = recognize_from_mic(self.lang_tag, self.settings.azure_api, self.settings.azure_region)
+    #     self.conversation = concatenate(self.conversation, "You: ", my_paragraph)
+
+    #     if self.print_cmd:
+    #         print(f"You: {my_paragraph}\n")
+        
+    #     return my_paragraph
+
+    def _start_speak(self):
         if not self.is_background_set:
             self.conversation = ""
         
         if self.print_cmd:
             print("Speak into your microphone.\n")
         
-        my_paragraph = recognize_from_mic(self.lang_tag, self.settings.azure_api, self.settings.azure_region)
-        self.conversation = concatenate(self.conversation, "You: ", my_paragraph)
+        self.speech_recognizer.start_continuous_recognition_async()
+    
+    def _append_recognized_text(self, evt):
+        self.my_paragraph += evt.result.text
+    
+    def _stop_speak(self):
+        self.speech_recognizer.stop_continuous_recognition_async()
+        self.conversation = concatenate(self.conversation, "You: ", self.my_paragraph)
 
+        return self.forward()
+    
+    def _print_paragraph(self, evt):
         if self.print_cmd:
-            print(f"You: {my_paragraph}\n")
-        
-        return my_paragraph
-
+            print(f"You: {self.my_paragraph}\n")
+    
     def _respond(self):
         ai_respond = respond(self.conversation, self.respond_mod, self.settings.openai_api)
         synthesize_to_speaker(ai_respond, self.lang_tag, self.settings.azure_api, self.settings.azure_region)
@@ -45,19 +77,25 @@ class ChatSession:
         return ai_respond
 
     def _suggestion(self):
-        self.conversation_suggestion = self.conversation+'\nYou: '
-        sugg = suggestion(self.conversation_suggestion, self.sugg_mod, self.settings.openai_api)
+        sugg = suggestion(self.conversation + '\nYou: ', self.sugg_mod, self.settings.openai_api)
         if self.print_cmd:
             print(f"Suggestion: {sugg}")
         return sugg
     
     def forward(self):
-        my_paragraph = self._speak()
+        # my_paragraph = self._speak()
+
         ai_respond = self._respond()
 
         suggestion = None
         if self.is_suggestion:
             suggestion = self._suggestion()
+
+        if self.debug:
+            print(f"Current sentence: {self.conversation}")
+        
+        my_paragraph = self.my_paragraph
+        self.my_paragraph = ""
         return (my_paragraph, ai_respond, suggestion)
 
     def mode_changed(self, index):

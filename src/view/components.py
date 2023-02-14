@@ -115,7 +115,19 @@ class LanguageBox(QComboBox):
 class SpeakButton(QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__("Speak", *args, **kwargs)
-        self.setStyleSheet(qt_style_sheet.speak_button)
+        self.setStyleSheet(qt_style_sheet.speak_button_unpushed)
+        
+        self.state = False
+        self.clicked.connect(self._change_button)
+
+    def _change_button(self):
+        self.state = not self.state
+        if self.state:
+            self.setText("Speaking...")
+            self.setStyleSheet(qt_style_sheet.speak_button_pushed)
+        else:
+            self.setText("Speak")
+            self.setStyleSheet(qt_style_sheet.speak_button_unpushed)
 
 class ClearButton(QPushButton):
     def __init__(self, *args, **kwargs):

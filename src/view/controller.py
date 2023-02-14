@@ -52,12 +52,19 @@ class Controller:
 
     # @pyqtSlot()
     def _speak(self):
-        my_paragraph, ai_respond, sugg = self._model.forward()
-        self._view.text_edit.append_text("You: " + my_paragraph, "blue")
-        self._view.text_edit.append_text("AI: " + ai_respond, "green")
+        # my_paragraph, ai_respond, sugg = self._model.forward()
 
-        if self._model.is_suggestion:
-            self._view.suggestion_window.suggestion_label.setText(sugg.replace('\n', ''))
+        if self._model.start_recording:
+            self._model.start_recording = False
+            my_paragraph, ai_respond, sugg = self._model._stop_speak()
+            self._view.text_edit.append_text("You: " + my_paragraph, "blue")
+            self._view.text_edit.append_text("AI: " + ai_respond, "green")
+
+            if self._model.is_suggestion:
+                self._view.suggestion_window.suggestion_label.setText(sugg.replace('\n', ''))
+        else:
+            self._model.start_recording = True
+            self._model._start_speak()
     
     def _clear_text(self):
         self._model.conversation=''

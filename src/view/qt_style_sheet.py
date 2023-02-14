@@ -41,7 +41,6 @@ language_box = """
 text_edit = """
     QTextEdit {
         background-color: white;
-        background-image: url(/test.jpg);
         color: black;
         font-size: 16px;
         padding: 10px;

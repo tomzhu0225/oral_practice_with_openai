@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QTextCursor, QFont, QBrush, QColor
 from PyQt5.QtWidgets import QDockWidget, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QComboBox, QLineEdit, QToolBar, QAction
 
@@ -76,11 +76,8 @@ class TextEdit(QTextEdit):
         size_policy.setRetainSizeWhenHidden(True)
         self.setSizePolicy(size_policy)
 
-        self.signal = pyqtSignal(str, QTextCursor)
-
     @pyqtSlot()
     def append_text(self, text, color):
-
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.End)
         # cursor.insertBlock()
@@ -94,6 +91,7 @@ class TextEdit(QTextEdit):
         cursor.insertText(text)
         self.setTextCursor(cursor)
         self.ensureCursorVisible()
+
 
 
 

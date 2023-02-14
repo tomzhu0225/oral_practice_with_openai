@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QWaitCondition, QMutex
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
 
 
@@ -18,15 +18,7 @@ class Controller:
         self._view.text_edit.setVisible(not self._view.text_edit.isVisible())
 
     def _change_mode(self, index):
-        if index == 0:
-            self._model.respond_mod = "text-davinci-003"
-            self._model.sugg_mod = "text-davinci-003"
-        elif index == 1:
-            self._model.respond_mod = "text-davinci-003"
-            self._model.sugg_mod = "text-curie-001"
-        else:
-            self._model.respond_mod = "text-curie-001"
-            self._model.sugg_mod = "text-curie-001"
+        self._model.change_mode(index)
     
     def _change_suggestion(self):
         self._model.is_suggestion = not self._model.is_suggestion
@@ -56,17 +48,22 @@ class Controller:
     # @pyqtSlot()
     def _speak(self):
         if self._model.start_recording:
+            self._model.stop_speak()
             self._model.start_recording = False
-            my_paragraph, ai_respond, sugg = self._model._stop_speak()
+        else:
+            self._model.start_recording = True
+            self._model.start_speak()
+            self._view.text_edit.append_text(f"\n\n{self._model.user_name}: ", "blue")
+    
+    def _response(self):
+        if not self._model.start_recording:
+            my_paragraph, ai_response, sugg = self._model.respond()
 
-            self._view.text_edit.append_text("\n\nAI: " + ai_respond, "green")
+            self._view.text_edit.append_text(f"\n\n{self._model.ai_name}: {ai_response}", "green")
 
             if self._model.is_suggestion:
                 self._view.suggestion_window.suggestion_label.setText(sugg.replace('\n', ''))
-        else:
-            self._model.start_recording = True
-            self._model._start_speak()
-            self._view.text_edit.append_text("\n\nYou: ", "blue")
+    
     
     def _clear_text(self):
         self._model.conversation=''
@@ -103,11 +100,16 @@ class Controller:
         
         self._view.lower_layout.speak_button.clicked.connect(self._speak)
 
-        print_recognized = PrintRecognized(self._view)
+        print_recognized = PrintRecognized(self)
         def _print_recognized(evt):
             print_recognized.run(evt)
-            
+        stop_speaking = StopSpeaking(self)
+        def _stop_speaking(evt):
+            stop_speaking.run()
+        
         self._model.speech_recognizer.recognized.connect(_print_recognized)
+        self._model.speech_recognizer.session_stopped.connect(_stop_speaking)
+
         
         self._view.lower_layout.clear_button.clicked.connect(self._clear_text)
 
@@ -127,11 +129,24 @@ class PrintRecognized(QObject):
 
     signal = pyqtSignal(str) # pyqtSignal needs to be defined on the class level
 
-    def __init__(self, view):
+    def __init__(self, controller):
         super().__init__()
-        self._view = view
-        self.signal.connect(lambda recognized_message: self._view.text_edit.append_text(recognized_message, "blue"))
+        self._controller = controller
+        self.signal.connect(lambda recognized_message: self._controller._view.text_edit.append_text(recognized_message, "blue"))
     
     @pyqtSlot()
     def run(self, evt):
         self.signal.emit(evt.result.text)
+
+class StopSpeaking(QObject):
+
+    signal = pyqtSignal() # pyqtSignal needs to be defined on the class level
+
+    def __init__(self, controller):
+        super().__init__()
+        self._controller = controller
+        self.signal.connect(self._controller._response)
+    
+    @pyqtSlot()
+    def run(self):
+        self.signal.emit()

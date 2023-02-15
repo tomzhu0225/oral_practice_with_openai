@@ -88,9 +88,7 @@ class Controller:
         if not self._model.start_recording:
             my_paragraph, ai_response, sugg = self._model.respond()
 
-            for _ in range(len("generating...")):
-                self._view.text_edit.textCursor().deletePreviousChar()
-            self.append_text(f"{ai_response}", "green")
+            self.append_text(f"{ai_response}", "green", offset_length = len("generating..."))
 
             if self._model.is_suggestion:
                 print("Start generating suggestion")

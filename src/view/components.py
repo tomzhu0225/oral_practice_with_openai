@@ -75,22 +75,23 @@ class TextEdit(QTextEdit):
         size_policy = self.sizePolicy()
         size_policy.setRetainSizeWhenHidden(True)
         self.setSizePolicy(size_policy)
+        self.text_cursor = self.textCursor()
 
     @pyqtSlot()
-    def append_text(self, text, color, cursor_position = QTextCursor.End):
-        cursor = self.textCursor()
-        cursor.movePosition(cursor_position)
-        # cursor.insertBlock()
-        charFormat = cursor.charFormat()
+    def append_text(self, text, color, offset_length = 0):
+        for _ in range(offset_length):
+            self.text_cursor.deletePreviousChar()
+        charFormat = self.text_cursor.charFormat()
         charFormat.setForeground(QBrush(QColor(color)))
         font = QFont()
         font.setPointSize(14)
         font.setFamily("Arial")
         charFormat.setFont(font)
-        cursor.setCharFormat(charFormat)
-        cursor.insertText(text)
-        self.setTextCursor(cursor)
+        self.text_cursor.setCharFormat(charFormat)
+        self.text_cursor.insertText(text)
+        self.setTextCursor(self.text_cursor)
         self.ensureCursorVisible()
+
 
 
 

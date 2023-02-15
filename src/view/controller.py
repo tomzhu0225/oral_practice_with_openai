@@ -1,7 +1,5 @@
-import threading
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtGui import QTextCursor
 
 
 
@@ -74,10 +72,8 @@ class Controller:
     def _speak(self):
         if self._model.start_recording:
             self._model.stop_speak()
-            self._model.start_recording = False
             self.append_text(f"\n\n{self._model.ai_name}: generating...", "green")
         else:
-            self._model.start_recording = True
             self._model.start_speak()
             self.append_text(f"\n\n{self._model.user_name}: ", "blue")
     

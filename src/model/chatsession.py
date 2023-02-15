@@ -43,6 +43,7 @@ class ChatSession:
             self.speech_recognizer.canceled.connect(lambda evt: print('CANCELED {}'.format(evt)))
     
     def start_speak(self):
+        self.start_recording = True
         if not self.is_background_set:
             self.conversation = ""
         
@@ -57,6 +58,7 @@ class ChatSession:
     def stop_speak(self):
         self.speech_recognizer.stop_continuous_recognition_async()
         self.conversation += f"\n{self.user_name}: {self.my_paragraph}\n\n{self.ai_name}:"
+        self.start_recording = False
     
     def _print_paragraph(self, evt):
         print(f"{self.user_name}: {self.my_paragraph}\n")

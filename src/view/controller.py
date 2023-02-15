@@ -78,7 +78,8 @@ class Controller:
             self.append_text(f"\n\n{self._model.user_name}: ", "blue")
     
     def _append_recognized(self, evt):
-        self.append_text(evt.result.text, "blue")
+        if self._model.start_recording:
+            self.append_text(evt.result.text, "blue")
 
     def _response(self, evt):
         if not self._model.start_recording:

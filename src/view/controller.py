@@ -1,5 +1,30 @@
+import threading
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtGui import QTextCursor
+
+
+
+class CurrentThread(QObject):
+
+    _on_execute = pyqtSignal(object, tuple, dict)
+
+    def __init__(self):
+        super(QObject, self).__init__()
+        self._on_execute.connect(self._execute_in_thread)
+
+    def execute(self, f, args, kwargs):
+        self._on_execute.emit(f, args, kwargs)
+
+    def _execute_in_thread(self, f, args, kwargs):
+        f(*args, **kwargs)
+
+main_thread = CurrentThread()
+
+def run_in_main_thread(f):
+    def result(*args, **kwargs):
+        main_thread.execute(f, args, kwargs)
+    return result
 
 
 
@@ -31,7 +56,7 @@ class Controller:
         self._model.settings._update_settings()
 
 
-    
+
     # Background input
     # @pyqtSlot()
     def _update_background(self):
@@ -50,20 +75,28 @@ class Controller:
         if self._model.start_recording:
             self._model.stop_speak()
             self._model.start_recording = False
+            self.append_text(f"\n\n{self._model.ai_name}: generating...", "green")
         else:
             self._model.start_recording = True
             self._model.start_speak()
-            self._view.text_edit.append_text(f"\n\n{self._model.user_name}: ", "blue")
+            self.append_text(f"\n\n{self._model.user_name}: ", "blue")
     
-    def _response(self):
+    def _append_recognized(self, evt):
+        self.append_text(evt.result.text, "blue")
+
+    def _response(self, evt):
         if not self._model.start_recording:
             my_paragraph, ai_response, sugg = self._model.respond()
 
-            self._view.text_edit.append_text(f"\n\n{self._model.ai_name}: {ai_response}", "green")
+            for _ in range(len("generating...")):
+                self._view.text_edit.textCursor().deletePreviousChar()
+            self.append_text(f"{ai_response}", "green")
 
             if self._model.is_suggestion:
+                print("Start generating suggestion")
+                print(sugg)
                 self._view.suggestion_window.suggestion_label.setText(sugg.replace('\n', ''))
-    
+                print("Finish generating suggestion")
     
     def _clear_text(self):
         self._model.conversation=''
@@ -82,8 +115,7 @@ class Controller:
 
 
 
-    # Connect all signals when creating the objects
-
+    # Connect all signals when creating the object
     def _connect_signals(self):
         # ToolBar
         self._view.toolbar.author_action.triggered.connect(self._display_author_info)
@@ -91,6 +123,10 @@ class Controller:
         self._view.toolbar.mode_selector.currentIndexChanged.connect(self._change_mode)
         self._view.toolbar.suggestion_action.triggered.connect(self._change_suggestion)
         self._view.toolbar.settings_action.triggered.connect(self._change_settings)
+
+        # Text edit
+        # change to QObject multithread
+        self.append_text = run_in_main_thread(self._view.text_edit.append_text)
 
         # Background input
         self._view.background_input.textChanged.connect(self._update_background)
@@ -100,53 +136,8 @@ class Controller:
         
         self._view.lower_layout.speak_button.clicked.connect(self._speak)
 
-        print_recognized = PrintRecognized(self)
-        def _print_recognized(evt):
-            print_recognized.run(evt)
-        stop_speaking = StopSpeaking(self)
-        def _stop_speaking(evt):
-            stop_speaking.run()
-        
-        self._model.speech_recognizer.recognized.connect(_print_recognized)
-        self._model.speech_recognizer.session_stopped.connect(_stop_speaking)
+        self._model.speech_recognizer.recognized.connect(self._append_recognized)
+        self._model.speech_recognizer.session_stopped.connect(self._response)
 
-        
         self._view.lower_layout.clear_button.clicked.connect(self._clear_text)
 
-
-
-class PrintRecognized(QObject):
-    # PyQt5 requires only the main thread controls the GUI
-    # So speech_recognizer.recognized signals can not be directly send to control the GUI
-    # To solve this, the signal from other threads can be transformed into pyqtSignal
-    # 
-    # The process is:
-    # 1. speech_recognizer.recognized triggered
-    # 2. call _print_recognized()
-    # 3. inside _print_recognized(), call PrintRecognized.run()
-    # 4. pyqtSignal signals, which then calls the function connected in PrintRecognized.__init__
-    # 5. call self._view.text_edit.append_text() to print the text
-
-    signal = pyqtSignal(str) # pyqtSignal needs to be defined on the class level
-
-    def __init__(self, controller):
-        super().__init__()
-        self._controller = controller
-        self.signal.connect(lambda recognized_message: self._controller._view.text_edit.append_text(recognized_message, "blue"))
-    
-    @pyqtSlot()
-    def run(self, evt):
-        self.signal.emit(evt.result.text)
-
-class StopSpeaking(QObject):
-
-    signal = pyqtSignal() # pyqtSignal needs to be defined on the class level
-
-    def __init__(self, controller):
-        super().__init__()
-        self._controller = controller
-        self.signal.connect(self._controller._response)
-    
-    @pyqtSlot()
-    def run(self):
-        self.signal.emit()

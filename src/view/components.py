@@ -77,9 +77,9 @@ class TextEdit(QTextEdit):
         self.setSizePolicy(size_policy)
 
     @pyqtSlot()
-    def append_text(self, text, color):
+    def append_text(self, text, color, cursor_position = QTextCursor.End):
         cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.End)
+        cursor.movePosition(cursor_position)
         # cursor.insertBlock()
         charFormat = cursor.charFormat()
         charFormat.setForeground(QBrush(QColor(color)))

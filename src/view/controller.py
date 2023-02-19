@@ -1,3 +1,31 @@
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import QMessageBox
+
+
+
+class CurrentThread(QObject):
+
+    _on_execute = pyqtSignal(object, tuple, dict)
+
+    def __init__(self):
+        super(QObject, self).__init__()
+        self._on_execute.connect(self._execute_in_thread)
+
+    def execute(self, f, args, kwargs):
+        self._on_execute.emit(f, args, kwargs)
+
+    def _execute_in_thread(self, f, args, kwargs):
+        f(*args, **kwargs)
+
+main_thread = CurrentThread()
+
+def run_in_main_thread(f):
+    def result(*args, **kwargs):
+        main_thread.execute(f, args, kwargs)
+    return result
+
+
+
 class Controller:
     def __init__(self, model, view):
         self._model = model
@@ -5,25 +33,15 @@ class Controller:
         self._default_settings()
         self._connect_signals()
     
-    
     # ToolBar
     def _display_author_info(self):
-        from PyQt5.QtWidgets import QMessageBox
         QMessageBox.information(self._view, "Author Information", "Author: Bowen ZHU\nEmail: bowen.zhu@student-cs.fr\nContributor: Chuanqi XU\nEmail: chuanqi.xu@yale.edu")
     
     def _change_text_vis(self):
         self._view.text_edit.setVisible(not self._view.text_edit.isVisible())
 
     def _change_mode(self, index):
-        if index == 0:
-            self._model.respond_mod = "text-davinci-003"
-            self._model.sugg_mod = "text-davinci-003"
-        elif index == 1:
-            self._model.respond_mod = "text-davinci-003"
-            self._model.sugg_mod = "text-curie-001"
-        else:
-            self._model.respond_mod = "text-curie-001"
-            self._model.sugg_mod = "text-curie-001"
+        self._model.change_mode(index)
     
     def _change_suggestion(self):
         self._model.is_suggestion = not self._model.is_suggestion
@@ -36,7 +54,7 @@ class Controller:
         self._model.settings._update_settings()
 
 
-    
+
     # Background input
     # @pyqtSlot()
     def _update_background(self):
@@ -52,12 +70,28 @@ class Controller:
 
     # @pyqtSlot()
     def _speak(self):
-        my_paragraph, ai_respond, sugg = self._model.forward()
-        self._view.text_edit.append_text("You: " + my_paragraph, "blue")
-        self._view.text_edit.append_text("AI: " + ai_respond, "green")
+        if self._model.start_recording:
+            self._model.stop_speak()
+            self.append_text(f"\n\n{self._model.ai_name}: generating...", "green")
+        else:
+            self._model.start_speak()
+            self.append_text(f"\n\n{self._model.user_name}: ", "blue")
+    
+    def _append_recognized(self, evt):
+        if self._model.start_recording:
+            self.append_text(evt.result.text, "blue")
 
-        if self._model.is_suggestion:
-            self._view.suggestion_window.suggestion_label.setText(sugg.replace('\n', ''))
+    def _response(self, evt):
+        if not self._model.start_recording:
+            my_paragraph, ai_response, sugg = self._model.respond()
+
+            self.append_text(f"{ai_response}", "green", offset_length = len("generating..."))
+
+            if self._model.is_suggestion:
+                print("Start generating suggestion")
+                print(sugg)
+                self._view.suggestion_window.suggestion_label.setText(sugg.replace('\n', ''))
+                print("Finish generating suggestion")
     
     def _clear_text(self):
         self._model.conversation=''
@@ -66,7 +100,7 @@ class Controller:
         self._view.background_input.clear()
         if self._model.is_suggestion:
             self._view.suggestion_window.suggestion_label.setText("")
-    
+
 
 
     # Default settings when creating the objects
@@ -74,8 +108,9 @@ class Controller:
         self._view.suggestion_window.hide()
         self._view.lower_layout.language_box.setCurrentText(self._model.lang_tag)
 
-    # Connect all signals when creating the objects
 
+
+    # Connect all signals when creating the object
     def _connect_signals(self):
         # ToolBar
         self._view.toolbar.author_action.triggered.connect(self._display_author_info)
@@ -84,11 +119,20 @@ class Controller:
         self._view.toolbar.suggestion_action.triggered.connect(self._change_suggestion)
         self._view.toolbar.settings_action.triggered.connect(self._change_settings)
 
+        # Text edit
+        # change to QObject multithread
+        self.append_text = run_in_main_thread(self._view.text_edit.append_text)
+
         # Background input
         self._view.background_input.textChanged.connect(self._update_background)
 
         # Lower Buttons
         self._view.lower_layout.language_box.currentIndexChanged.connect(self._change_language)
+        
         self._view.lower_layout.speak_button.clicked.connect(self._speak)
+
+        self._model.speech_recognizer.recognized.connect(self._append_recognized)
+        self._model.speech_recognizer.session_stopped.connect(self._response)
+
         self._view.lower_layout.clear_button.clicked.connect(self._clear_text)
 

@@ -41,7 +41,6 @@ language_box = """
 text_edit = """
     QTextEdit {
         background-color: white;
-        background-image: url(/test.jpg);
         color: black;
         font-size: 16px;
         padding: 10px;
@@ -61,17 +60,26 @@ background_input = """
         }
     """
 
-speak_button = """
+speak_button_unpushed = """
 QPushButton { 
-    background-color: grey; 
+    background-color: #808080; 
     border-radius: 20px; 
     padding: 10px; color:white; 
     font-size:20px;
 } 
 QPushButton:hover { 
-    background-color: red; 
+    background-color: #373737; 
 } 
-QPushButton:pressed { 
-    background-color: green; 
-}
+"""
+
+speak_button_pushed = """
+QPushButton { 
+    background-color: #D0312D; 
+    border-radius: 20px; 
+    padding: 10px; color:white; 
+    font-size:20px;
+} 
+QPushButton:hover { 
+    background-color: #910F02; 
+} 
 """

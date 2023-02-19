@@ -47,9 +47,11 @@ On the toolbar, click "Suggestion", which will show the suggested response gener
 
 Add hide text function (04/02/2023)
 
-Web page version developed(07/02/2023):
+Web page version developed (07/02/2023):
 [link](https://drawingsword-oral.streamlit.app/)
 ![Alt Text](./assets/dev_pic.png)
+
+Change from single-shot recognition to continuous recognition (13/02/2023)
 
 # TODO list
 

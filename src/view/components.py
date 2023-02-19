@@ -70,26 +70,30 @@ class TextEdit(QTextEdit):
         super().__init__(*args, **kwargs)
 
         self.setReadOnly(True)
+        self.setStyleSheet(qt_style_sheet.text_edit)
+
         size_policy = self.sizePolicy()
         size_policy.setRetainSizeWhenHidden(True)
         self.setSizePolicy(size_policy)
-        self.setStyleSheet(qt_style_sheet.text_edit)
-    
+        self.text_cursor = self.textCursor()
+
     @pyqtSlot()
-    def append_text(self, text, color):
-        cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.End)
-        cursor.insertBlock()
-        charFormat = cursor.charFormat()
+    def append_text(self, text, color, offset_length = 0):
+        for _ in range(offset_length):
+            self.text_cursor.deletePreviousChar()
+        charFormat = self.text_cursor.charFormat()
         charFormat.setForeground(QBrush(QColor(color)))
         font = QFont()
         font.setPointSize(14)
         font.setFamily("Arial")
         charFormat.setFont(font)
-        cursor.setCharFormat(charFormat)
-        cursor.insertText(text)
-        self.setTextCursor(cursor)
+        self.text_cursor.setCharFormat(charFormat)
+        self.text_cursor.insertText(text)
+        self.setTextCursor(self.text_cursor)
         self.ensureCursorVisible()
+
+
+
 
 
 
@@ -115,7 +119,19 @@ class LanguageBox(QComboBox):
 class SpeakButton(QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__("Speak", *args, **kwargs)
-        self.setStyleSheet(qt_style_sheet.speak_button)
+        self.setStyleSheet(qt_style_sheet.speak_button_unpushed)
+        
+        self.state = False
+        self.clicked.connect(self._change_button)
+
+    def _change_button(self):
+        self.state = not self.state
+        if self.state:
+            self.setText("Speaking...")
+            self.setStyleSheet(qt_style_sheet.speak_button_pushed)
+        else:
+            self.setText("Speak")
+            self.setStyleSheet(qt_style_sheet.speak_button_unpushed)
 
 class ClearButton(QPushButton):
     def __init__(self, *args, **kwargs):
